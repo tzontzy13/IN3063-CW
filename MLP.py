@@ -2,11 +2,10 @@ import random
 import numpy as np
 
 
-class MLP(sizes):
+class MLP():
 
     def __init__(self, sizes):
         self.sizes = sizes
-        # [784, 30, 10]
         self.biases = []
         self.weights = []
 
@@ -17,19 +16,25 @@ class MLP(sizes):
             self.weights.append(np.random.randn(j, i))
 
     def forward(self, x):
-        a = []
+        all_layer_activations = []
+        inputs = x
 
-        for b, w in zip(self.biases, self.weights):
-            x = sigmoid(np.dot(w, x)+b)
-            a.append(x)
+        for i in range(len(self.weights)):
+            single_layer_activations = []
 
-        return a
+            for b, w in zip(self.biases[i], self.weights[i]):
+                single_layer_activations.append(self.sigmoid(np.dot(w, inputs)+b))
 
-    # def loss(y, a):
-    #     pass
+            all_layer_activations.append(single_layer_activations)
+            inputs = single_layer_activations
 
-    # def accuracy():
-    #     pass
+        return all_layer_activations
+
+    def loss(self, y, a):
+        pass
+
+    def accuracy(self):
+        pass
 
     @staticmethod
     def sigmoid(z):
