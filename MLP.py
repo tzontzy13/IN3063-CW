@@ -20,8 +20,35 @@ class MLP():
 
     def forward(self, xs):
 
-        x_layers = []
+        all_activations_for_all_inputs = []
 
+        for x in xs:
+
+            all_activations_for_one_input = []
+            inputs = x
+
+            for i in range(len(self.weights)):
+
+                single_layer_activations = []
+
+                for b, w in zip(self.biases[i], self.weights[i]):
+
+                    single_layer_activations.append(
+                        self.sigmoid(np.dot(w, inputs)+b))
+
+                all_activations_for_one_input.append(single_layer_activations)
+                inputs = single_layer_activations
+
+            all_activations_for_all_inputs.append(
+                all_activations_for_one_input)
+
+        return np.array(all_activations_for_all_inputs, dtype=object)
+
+    def forward2(self, xs):
+
+        x_layers = []
+        outputs = []
+        hidden = []
         for x in xs:
             all_layer_activations = []
 
@@ -38,33 +65,29 @@ class MLP():
 
             x_layers.append(all_layer_activations)
 
-        return x_layers
+        for x in x_layers:
+            outputs.append(x[1])
 
-    def forward2(self, x):
+        for x in x_layers:
+            hidden.append(x[0])
 
-        #print(x[0])
-        print(self.weights[0].shape)
-        # print(self.weights[1].shape)
-        # print(self.biases.shape)
+        return np.array(outputs, dtype=object), x_layers
 
-        # [1 2 3 4 5 ... 784]
-        # [1 2 3 4 5 ... 784]
-        # [1 2 3 4 5 ... 784]
-        # .
-        # .
-        # . 30 de ori
-        # .
-        # [1 2 3 4 5 ... 784]
-
-        # activation_hidden_0 = self.sigmoid(x[0][0] * self.weights[0][0][0] + x[0][1] * self.weights[0][0][1]+ self.biases[0][0])
-        # activation_hidden_1 = self.sigmoid(x[:,0] * self.weights[0][0][0] + self.biases[0][0])
-        
-        #layer1_weights = self.weights[0]
-
-        #activation_hidden_2 = self.sigmoid(x[:,0] * self.weights[0][0][0] + x[:,1] * self.weights[0][0][1])
+    def forward3(self, x):
+        pass
 
     def loss(self, a, y):
-        return 0.5*np.sum((y-a)^2)
+
+        def square(a):
+            return a*a
+
+        loss = 0
+
+        for y_pred, y_actual in zip(a, y):
+            x = np.sum(0.5*square(y_pred-y_actual))
+            loss += x
+
+        return loss/len(a)
 
     def accuracy(self):
         pass
