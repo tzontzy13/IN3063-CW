@@ -4,19 +4,26 @@ import torch
 import torchvision
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
+from torch.utils.data import DataLoader
+
 
 # looked for documentation on
 # https://pytorch.org/docs/stable/torchvision/datasets.html#mnist
 # https://www.aiworkbox.com/lessons/load-mnist-dataset-from-pytorch-torchvision
 # downloaded both test and train sets
 
+transform = transforms.Compose(
+    [transforms.ToTensor()])
+
 trainset = datasets.MNIST(root='./data',
                           train=True,
+                          transform=transform,
                           download=True,
                           )
 
 testset = datasets.MNIST(root='./data',
                          train=False,
+                         transform=transform,
                          download=True,
                          )
 
@@ -33,30 +40,26 @@ def y_to_vector(n):
 
 def get_mnist_data():
 
-    # created data structures for both training and testing sets
-    # split them into data and targets
+    # train_data = trainset.data.numpy()
+    # train_data = train_data.reshape(60000, 784, 1)
+    # train_data = np.array([train_data[i]/max(train_data[i])
+    #                        for i in range(len(train_data))])
 
-    train_data = []
-    train_targets = []
+    # train_targets = trainset.targets.numpy()
+    # train_targets = train_targets.reshape(60000, 1)
+    # train_targets = np.array([y_to_vector(train_targets[i])
+    #                           for i in range(len(train_targets))])
 
-    test_data = []
-    test_targets = []
+    test_data = testset.data.numpy()
+    test_data = test_data.reshape(10000, 784)
+    test_data = np.array([test_data[i]/max(test_data[i])
+                          for i in range(len(test_data))])
 
-    # reshape a 28x28 matrix into a NORMALIZED 784 vector
-    for i in trainset.data:
-        train_data.append(i.reshape(784)/255)
-
-    # transformed the target from number to vector, for use in loss function
-    for i in trainset.targets:
-        train_targets.append(y_to_vector(i))
-
-    # reshape a 28x28 matrix into a NORMALIZED 784 vector
-    for i in testset.data:
-        test_data.append(i.reshape(784)/255)
-
-    # transformed the target from number to vector, for use in loss function
-    for i in testset.targets:
-        test_targets.append(y_to_vector(i))
+    # test_targets = testset.targets.numpy()
+    # test_targets = test_targets.reshape(10000, 1)
+    # test_targets = np.array([y_to_vector(test_targets[i])
+    #                          for i in range(len(test_targets))])
 
     # return the 4 data structures
-    return train_data, train_targets, test_data, test_targets
+    return test_data
+    #train_data, train_targets, , test_targets
