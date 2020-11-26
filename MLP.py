@@ -46,35 +46,34 @@ class MLP():
 
     def forward2(self, xs):
 
-        x_layers = []
-        outputs = []
-        hidden = []
+        all_layers = []
+        output_layer = []
+        hidden_layer = []
+        num_of_layers = len(self.sizes) - 1
+
         for x in xs:
-            all_layer_activations = []
+            image_layer_activations = []
 
             inputs = x
-            for i in range(len(self.weights)):
+            for i in range(num_of_layers):
                 single_layer_activations = []
 
                 for b, w in zip(self.biases[i], self.weights[i]):
                     single_layer_activations.append(
                         self.sigmoid(np.dot(w, inputs)+b))
 
-                all_layer_activations.append(single_layer_activations)
+                image_layer_activations.append(single_layer_activations)
                 inputs = single_layer_activations
 
-            x_layers.append(all_layer_activations)
+            all_layers.append(image_layer_activations)
 
-        for x in x_layers:
-            outputs.append(x[1])
+        for x in all_layers:
+            output_layer.append(x[1])
 
-        for x in x_layers:
-            hidden.append(x[0])
+        for x in all_layers:
+            hidden_layer.append(x[0])
 
-        return np.array(outputs, dtype=object), x_layers
-
-    def forward3(self, x):
-        pass
+        return np.array(output_layer, dtype=object), np.array(hidden_layer, dtype=object), all_layers
 
     def loss(self, a, y):
 
@@ -97,10 +96,6 @@ class MLP():
         return 1/(1+np.exp(-z))
 
     @staticmethod
-    def sigmoid_derivated(n):
-        return sigmoid(n)*(1-sigmoid(n))
-
-    @staticmethod
     def relu(x):
         return max(0, x)
 
@@ -110,3 +105,7 @@ class MLP():
             return 1
         else:
             return 0
+
+
+def sigmoid_derivated(n):
+    return MLP.sigmoid(n)*(1-MLP.sigmoid(n))

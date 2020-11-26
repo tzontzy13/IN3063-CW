@@ -8,9 +8,9 @@ from MLP_SGD import MLP_SGD
 
 test_data, test_targets = get_mnist_data()
 
-mlp = MLP([784,30,10])
+mlp = MLP([784, 30, 10])
 
 # test = mlp.forward(test_data)
-output, _ = mlp.forward2(test_data)
-loss = mlp.loss(test_targets, output)
-print(loss)
+a, b, x = mlp.forward2(test_data)
+# loss = mlp.loss(test_targets, output)
+print(len(x))
