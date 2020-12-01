@@ -12,9 +12,11 @@ from torch.utils.data import DataLoader
 # https://www.aiworkbox.com/lessons/load-mnist-dataset-from-pytorch-torchvision
 # downloaded both test and train sets
 
+# transforms the data to Tensor format
 transform = transforms.Compose(
     [transforms.ToTensor()])
 
+# download data from torchvision
 trainset = datasets.MNIST(root='./data',
                           train=True,
                           transform=transform,
@@ -27,17 +29,18 @@ testset = datasets.MNIST(root='./data',
                          download=True,
                          )
 
-
+# transform a number-target into a matrix, for use in loss function
+# for example 5 -> [[0], [0], [0], [0], [0], [1], [0], [0], [0], [0]]
+# used for easier calculation of  loss function
 def y_to_vector(n):
-    # transform a number-target into a matrix, for use in loss function
 
     # create an matrix of zeros then set a value of 1 to the index of input number
-    x = np.zeros((10))
+    x = np.zeros((10,1))
     x[n] = 1
 
     return x
 
-
+# method to transform the data for the desired inputs and outputs
 def get_mnist_data():
 
     # train_data = trainset.data.numpy()
@@ -51,7 +54,7 @@ def get_mnist_data():
     #                           for i in range(len(train_targets))])
 
     test_data = testset.data.numpy()
-    test_data = test_data.reshape(10000, 784)
+    test_data = test_data.reshape(10000, 784, 1)
     test_data = np.array([test_data[i]/max(test_data[i])
                           for i in range(len(test_data))])
 
@@ -62,4 +65,4 @@ def get_mnist_data():
 
     # return the 4 data structures
     return test_data, test_targets
-    #train_data, train_targets, , test_targets
+    #train_data, train_targets
