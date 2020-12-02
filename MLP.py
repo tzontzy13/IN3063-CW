@@ -31,7 +31,7 @@ class MLP():
     # deprecated
     def forward(self, xs):
 
-        all_layers = [xs]
+        all_layers = []
         output_layer = []
         hidden_layer = []
         num_of_layers = len(self.sizes) - 1
@@ -62,7 +62,7 @@ class MLP():
 
     def forward2(self, x):
 
-        # dataa structures for activations and Z's
+        # data structures for activations and Z's
         # activations = sigmoid(sum of weight * prev_act + bias)
         # Z = sum of weight * prev_act + bias
         # helps with the derivative of activations depending on Z's (sigmoid_derivated)
@@ -80,10 +80,9 @@ class MLP():
             single_layer_zs = []
 
             # for each weight and bias in that layer
-            # bias shape is
-            #     # for each neuron, one value
-            # weights shape is
-            #     # for each neuron, we have a weight for each neuron in the prev layer
+            # bias shape is for each neuron, one value
+            # weights shape is for each neuron,
+            # we have a weight for each neuron in the prev layer
             for b, w in zip(self.biases[i], self.weights[i]):
                 single_layer_activations.append(
                     self.sigmoid(np.dot(w, inputs)+b))
@@ -93,7 +92,8 @@ class MLP():
             image_layer_activations.append(
                 np.array(single_layer_activations, dtype=float))
             image_layer_zs.append(np.array(single_layer_zs, dtype=float))
-            # inputs becomes the activations of the last layer, so i have the right number of neurons for the next iteration
+            # inputs becomes the activations of the last layer,
+            # so i have the right number of neurons for the next iteration
             inputs = single_layer_activations
 
         # return all activ and Z's, for all layers
