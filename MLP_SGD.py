@@ -37,9 +37,9 @@ class MLP_SGD(MLP):
 
         print("done")
 
-    
     # calculate the gradient of all images in a minibatch
     # CHANGE NAME OF THIS FUNCTION
+
     def update(self, X_train, y_train):
 
         # init with zeros so i can use vector notation when calculation the average
@@ -64,7 +64,7 @@ class MLP_SGD(MLP):
             # derivative of (output - y_pred) ^ 2 = 1/2 * (output - y_pred) so, output - y_pred
             # derivative of output depending on Z's = second element below
 
-            sigma_z = (activations[-1] - y) * self.sigmoid_derivated(zs[-1])
+            sigma_z = (activations[-1] - y) * sigmoid_derivated(zs[-1])
 
             # bias gradient is sigma_z * derivative of Z's depending on bias, ALWAYS = 1
             # because z = w0 * a0 + w1 * a1 + ... + wn * an + b
@@ -93,17 +93,18 @@ class MLP_SGD(MLP):
                 # i transpose weights, new shape is (30,10)
                 # i can now do dot product of (30,10) shape with (10,1) shape so i get (30,1) shape
                 # i just multiply the dot with sigmoid derivated of Z's of the second to last layer, which is already (30,1) shape
-                sigma_z = np.dot(self.weights[i].transpose(), sigma_z) * self.sigmoid_derivated(zs[i-1])
+                sigma_z = np.dot(self.weights[i].transpose(
+                ), sigma_z) * sigmoid_derivated(zs[i-1])
                 # gradient of  bias  for this layer is same as for output layer
                 gradient_b[i-1] = sigma_z / len(X_train)
                 # gradient of weight for this layer is same as for output layer
                 gradient_w[i-1] = sigma_z * activations[i-1].transpose()
                 gradient_w[i-1] = gradient_w[i-1] / len(X_train)
-            
+
             # add to data strucure
             all_gradient_b.append(gradient_b)
             all_gradient_w.append(gradient_w)
-        
+
         all_gradient_b = np.array(all_gradient_b, dtype=object)
         all_gradient_w = np.array(all_gradient_w, dtype=object)
 

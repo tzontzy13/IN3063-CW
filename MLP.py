@@ -33,7 +33,7 @@ class MLP():
 
         all_layers = []
         output_layer = []
-        hidden_layer = []
+        # hidden_layer = []
         num_of_layers = len(self.sizes) - 1
 
         for x in xs:
@@ -53,12 +53,13 @@ class MLP():
             all_layers.append(image_layer_activations)
 
         for x in all_layers:
-            output_layer.append(x[1])
+            output_layer.append(x[-1])
 
-        for x in all_layers:
-            hidden_layer.append(x[0])
+        # for x in all_layers:
+        #     hidden_layer.append(x[0])
 
-        return np.array(output_layer, dtype=object), np.array(hidden_layer, dtype=object), np.array(all_layers, dtype=object)
+        return np.array(output_layer, dtype=object)
+        # , np.array(hidden_layer, dtype=object), np.array(all_layers, dtype=object)
 
     def forward2(self, x):
 
@@ -117,8 +118,19 @@ class MLP():
 
         return loss/len(a)
 
-    def evaluate(self):
-        pass
+    def evaluate(self, test_data, test_targets):
+        def feedforward(a):
+            for b, w in zip(self.biases, self.weights):
+                a = self.sigmoid(np.dot(w, a)+b)
+            return a
+
+        test_results = [(np.argmax(feedforward(x)), np.argmax(y))
+                        for (x, y) in zip(test_data, test_targets)]
+        pred_sum = 0
+        for (x, y) in test_results:
+            pred_sum += int(x == y)
+
+        return sum(int(x == y) for (x, y) in test_results)/len(test_data)*100
 
     @staticmethod
     def sigmoid(z):
