@@ -1,4 +1,4 @@
-from MLP import MLP, sigmoid_derivated
+from MLP import MLP, sigmoid_derivated, softmax_derivated
 
 import numpy as np
 
@@ -6,9 +6,9 @@ import numpy as np
 class MLP_SGD(MLP):
 
     # initialize SGD with learning rate and sizes ( [784, 30, 10] - example )
-    def __init__(self, sizes, lr=0.01):
+    def __init__(self, sizes, activation_list, lr=0.01):
 
-        super().__init__(sizes)
+        super().__init__(sizes, activation_list)
 
         self.lr = lr
 
@@ -21,7 +21,9 @@ class MLP_SGD(MLP):
                           for x in range(0, len(X_train), mini_batch_size)]
         y_mini_batches = [y_train[y:y+mini_batch_size]
                           for y in range(0, len(y_train), mini_batch_size)]
-
+        # initializes the prior loss before entering the epochs stage
+        criterion_outputs = self.forward(X_train)
+        prior_loss = self.loss(criterion_outputs, y_train)
         for i in range(epochs):
             print("Current epoch: ", i)
             # for each minibatch, call update
@@ -30,12 +32,24 @@ class MLP_SGD(MLP):
                 # for the weight and bias
                 mini_weights, mini_biases = self.update(mini_X, mini_y)
                 # update the weights and biases using the right formula
-                self.weights = [w-self.lr*mini_w
-                                for w, mini_w in zip(self.weights, mini_weights)]
-                self.biases = [b-self.lr*mini_b
-                               for b, mini_b in zip(self.biases, mini_biases)]
+                for w, mini_w in zip(self.weights, mini_weights):
+                    w -= self.lr*mini_w
+                for b, mini_b in zip(self.biases, mini_biases):
+                    b -= self.lr*mini_b
 
-        print("done")
+            # stopping criterion based on the difference between
+            # the prior Cost/Loss and the current one
+            criterion_outputs = self.forward(X_train)
+            current_loss = self.loss(criterion_outputs, y_train)
+            if(np.abs(prior_loss - current_loss) < 0.0001):
+                print("The NN update reached saturation")
+                return "The NN update reached saturation"
+            else:
+                # updates the prior loss
+                prior_loss = current_loss
+
+        print("The NN update completed all updates")
+        return "The NN update completed all updates"
 
     # calculate the gradient of all images in a minibatch
     # CHANGE NAME OF THIS FUNCTION
@@ -63,8 +77,7 @@ class MLP_SGD(MLP):
             # derivative of cost depending on output = first element below
             # derivative of (output - y_pred) ^ 2 = 1/2 * (output - y_pred) so, output - y_pred
             # derivative of output depending on Z's = second element below
-
-            sigma_z = (activations[-1] - y) * sigmoid_derivated(zs[-1])
+            sigma_z = (activations[-1] - y) * softmax_derivated(zs[-1])
 
             # bias gradient is sigma_z * derivative of Z's depending on bias, ALWAYS = 1
             # because z = w0 * a0 + w1 * a1 + ... + wn * an + b
@@ -77,14 +90,6 @@ class MLP_SGD(MLP):
             # for ALL OTHER LAYERS
 
             for i in range(self.num_layers-2, 0, -1):
-
-                # print("\n")
-                # print("sigma_z shape:     ", sigma_z.shape)
-                # print("weights shape:     ", self.weights[i].shape)
-                # print("weights transpose: ", self.weights[i].transpose().shape)
-                # print("dot shape:         ", np.dot(self.weights[i].transpose(), sigma_z).shape)
-                # print('\n')
-
                 # lets say im currently working on the second to last layer and my NN is of shape [784,30,10]
                 # sigma_z shape for last layer is (10,1)
                 # weights shape for last layer is (10,30) (30 because i have 30 neurons on my second to last layer)
@@ -93,8 +98,14 @@ class MLP_SGD(MLP):
                 # i transpose weights, new shape is (30,10)
                 # i can now do dot product of (30,10) shape with (10,1) shape so i get (30,1) shape
                 # i just multiply the dot with sigmoid derivated of Z's of the second to last layer, which is already (30,1) shape
+
+                # if(self.activation_list[i] == 'sigmoid'):
                 sigma_z = np.dot(self.weights[i].transpose(
                 ), sigma_z) * sigmoid_derivated(zs[i-1])
+                # elif(self.activation_list[i] == 'relu'):
+                #     sigma_z = np.dot(self.weights[i].transpose(
+                #     ), sigma_z) * self.relu_derivated(zs[i-1])
+
                 # gradient of  bias  for this layer is same as for output layer
                 gradient_b[i-1] = sigma_z / len(X_train)
                 # gradient of weight for this layer is same as for output layer
@@ -105,14 +116,14 @@ class MLP_SGD(MLP):
             all_gradient_b.append(gradient_b)
             all_gradient_w.append(gradient_w)
 
-        all_gradient_b = np.array(all_gradient_b, dtype=object)
-        all_gradient_w = np.array(all_gradient_w, dtype=object)
+        all_gradient_b1 = np.array(all_gradient_b, dtype=object)
+        all_gradient_w1 = np.array(all_gradient_w, dtype=object)
 
         # add all gradients
         gradient_b_return = [np.zeros(b.shape) for b in self.biases]
         gradient_w_return = [np.zeros(w.shape) for w in self.weights]
 
-        for bs, ws in zip(all_gradient_b, all_gradient_w):
+        for bs, ws in zip(all_gradient_b1, all_gradient_w1):
             for l in range(self.num_layers-1):
                 gradient_b_return[l] += bs[l]
                 gradient_w_return[l] += ws[l]

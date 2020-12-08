@@ -8,14 +8,13 @@ from MLP_SGD import MLP_SGD
 test_data, test_targets, train_data, train_targets = get_mnist_data()
 
 # initialize a Stochaistic Gradient Descent Multi Layer Perceptron
-# mlp_sgd = MLP_SGD(lr=0.01, sizes=[784,40,30,20,10])
-mlp_sgd = MLP_SGD(lr=1, sizes=[784, 16, 16, 10])
+
+mlp_sgd = MLP_SGD(lr=0.25, sizes=[784, 30, 10],
+                  activation_list=['sigmoid', 'softmax'])
 outputs1 = mlp_sgd.forward(test_data)
 print("Before update: ", mlp_sgd.loss(outputs1, test_targets))
 print("Accuracy: ", mlp_sgd.evaluate(test_data, test_targets))
-mlp_sgd.fit(train_data, train_targets, 5, 10)
+mlp_sgd.fit(train_data, train_targets, 2, 10)
 outputs2 = mlp_sgd.forward(test_data)
-print("After update: ", mlp_sgd.loss(outputs2, test_targets))
+print("Loss after update: ", mlp_sgd.loss(outputs2, test_targets))
 print("Accuracy: ", mlp_sgd.evaluate(test_data, test_targets))
-# update the weights and biases
-# test = mlp_sgd.update([test_data[0]], [test_targets[0]])

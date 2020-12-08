@@ -5,13 +5,11 @@ import numpy as np
 class MLP():
 
     # initialize weights and biases randomly
-    def __init__(self, sizes):
+    def __init__(self, sizes, activation_list):
         self.sizes = sizes
+        self.activation_list = activation_list
         self.biases = []
         self.weights = []
-
-        self.num_layers = len(self.sizes)
-
         # self.biases2 = []
         # self.weights2 = []
 
@@ -23,6 +21,8 @@ class MLP():
 
         # self.biases2 = np.array(self.biases2, dtype=object)
         # self.weights2 = np.array(self.weights2, dtype=object)
+
+        self.num_layers = len(self.sizes)
 
         self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
         self.weights = [np.random.randn(y, x)
@@ -44,10 +44,17 @@ class MLP():
                 single_layer_activations = []
 
                 for b, w in zip(self.biases[i], self.weights[i]):
-                    single_layer_activations.append(
-                        self.sigmoid(np.dot(w, inputs)+b))
 
-                image_layer_activations.append(single_layer_activations)
+                    z = np.dot(w, inputs)+b
+
+                    single_layer_activations.append(
+                        activation_call(self.num_layers - 2, i, z))
+                if i == self.num_layers - 2:
+                    image_layer_activations.append(
+                        self.softmax(single_layer_activations))
+                else:
+                    image_layer_activations.append(single_layer_activations)
+
                 inputs = single_layer_activations
 
             all_layers.append(image_layer_activations)
@@ -55,18 +62,10 @@ class MLP():
         for x in all_layers:
             output_layer.append(x[-1])
 
-        # for x in all_layers:
-        #     hidden_layer.append(x[0])
-
         return np.array(output_layer, dtype=object)
-        # , np.array(hidden_layer, dtype=object), np.array(all_layers, dtype=object)
 
     def forward2(self, x):
 
-        # data structures for activations and Z's
-        # activations = sigmoid(sum of weight * prev_act + bias)
-        # Z = sum of weight * prev_act + bias
-        # helps with the derivative of activations depending on Z's (sigmoid_derivated)
         image_layer_activations = [x]
         image_layer_zs = []
 
@@ -85,13 +84,14 @@ class MLP():
             # weights shape is for each neuron,
             # we have a weight for each neuron in the prev layer
             for b, w in zip(self.biases[i], self.weights[i]):
-                single_layer_activations.append(
-                    self.sigmoid(np.dot(w, inputs)+b))
-                single_layer_zs.append(np.dot(w, inputs)+b)
+                z = np.dot(w, inputs)+b
+                single_layer_activations.append(self.sigmoid(z))
+                single_layer_zs.append(z)
 
             # append each layer of activ and Z's in the all activ and Z's data structure
             image_layer_activations.append(
                 np.array(single_layer_activations, dtype=float))
+
             image_layer_zs.append(np.array(single_layer_zs, dtype=float))
             # inputs becomes the activations of the last layer,
             # so i have the right number of neurons for the next iteration
@@ -119,18 +119,19 @@ class MLP():
         return loss/len(a)
 
     def evaluate(self, test_data, test_targets):
-        def feedforward(a):
-            for b, w in zip(self.biases, self.weights):
-                a = self.sigmoid(np.dot(w, a)+b)
-            return a
+       # return sum(int(x == y) for (x, y) in test_results)/len(test_data)*100
+        test_results = []
 
-        test_results = [(np.argmax(feedforward(x)), np.argmax(y))
-                        for (x, y) in zip(test_data, test_targets)]
-        pred_sum = 0
+        for x, y in zip(test_data, test_targets):
+            a, _ = self.forward2(x)
+            test_results.append((np.argmax(a[-1]), np.argmax(y)))
+
+        acc = 0
         for (x, y) in test_results:
-            pred_sum += int(x == y)
+            if(x == y):
+                acc += 1
 
-        return sum(int(x == y) for (x, y) in test_results)/len(test_data)*100
+        return acc/len(test_data)*100
 
     @staticmethod
     def sigmoid(z):
@@ -147,6 +148,25 @@ class MLP():
         else:
             return 0
 
+    @ staticmethod
+    def softmax(x):
+
+        e = np.exp(x - np.max(x))  # prevent overflow
+
+        return e / np.sum(e)
+
+
+def softmax_derivated(x):
+    return MLP.softmax(x) * (1 - MLP.softmax(x))
+
 
 def sigmoid_derivated(n):
     return MLP.sigmoid(n)*(1-MLP.sigmoid(n))
+# returns z for softmax utilisation if this function is called on the last layer
+
+
+def activation_call(last_layer, current_layer, z):
+    if last_layer == current_layer:
+        return z
+    else:
+        return MLP.sigmoid(z)
