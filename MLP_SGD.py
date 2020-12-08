@@ -21,9 +21,11 @@ class MLP_SGD(MLP):
                           for x in range(0, len(X_train), mini_batch_size)]
         y_mini_batches = [y_train[y:y+mini_batch_size]
                           for y in range(0, len(y_train), mini_batch_size)]
+
         # initializes the prior loss before entering the epochs stage
         criterion_outputs = self.forward(X_train)
         prior_loss = self.loss(criterion_outputs, y_train)
+
         for i in range(epochs):
             print("Current epoch: ", i)
             # for each minibatch, call update
@@ -41,15 +43,16 @@ class MLP_SGD(MLP):
             # the prior Cost/Loss and the current one
             criterion_outputs = self.forward(X_train)
             current_loss = self.loss(criterion_outputs, y_train)
-            if(np.abs(prior_loss - current_loss) < 0.0001):
+
+            if(np.abs(prior_loss - current_loss) < 0.1):
                 print("The NN update reached saturation")
-                return "The NN update reached saturation"
+                return
             else:
-                # updates the prior loss
+                # updates the prior loss for the next epoch
                 prior_loss = current_loss
 
         print("The NN update completed all updates")
-        return "The NN update completed all updates"
+
 
     # calculate the gradient of all images in a minibatch
     # CHANGE NAME OF THIS FUNCTION

@@ -8,27 +8,12 @@ class MLP():
     def __init__(self, sizes, activation_list):
         self.sizes = sizes
         self.activation_list = activation_list
-        self.biases = []
-        self.weights = []
-        # self.biases2 = []
-        # self.weights2 = []
-
-        # for i in range(1, len(sizes)):
-        #     self.biases2.append(np.random.randn(sizes[i]))
-
-        # for i, j in zip(sizes[:-1], sizes[1:]):
-        #     self.weights2.append(np.random.randn(j, i))
-
-        # self.biases2 = np.array(self.biases2, dtype=object)
-        # self.weights2 = np.array(self.weights2, dtype=object)
-
         self.num_layers = len(self.sizes)
 
         self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
         self.weights = [np.random.randn(y, x)
                         for x, y in zip(sizes[:-1], sizes[1:])]
 
-    # deprecated
     def forward(self, xs):
 
         all_layers = []
@@ -47,11 +32,15 @@ class MLP():
 
                     z = np.dot(w, inputs)+b
 
-                    single_layer_activations.append(
-                        activation_call(self.num_layers - 2, i, z))
-                if i == self.num_layers - 2:
-                    image_layer_activations.append(
-                        self.softmax(single_layer_activations))
+                    if(i == num_of_layers - 1):
+                        a = z
+                    else:
+                        a = self.sigmoid(z)
+
+                    single_layer_activations.append(a)
+
+                if(i == num_of_layers - 1):
+                    image_layer_activations.append(self.softmax(single_layer_activations))
                 else:
                     image_layer_activations.append(single_layer_activations)
 
@@ -62,15 +51,23 @@ class MLP():
         for x in all_layers:
             output_layer.append(x[-1])
 
+        # for x in all_layers:
+        #     hidden_layer.append(x[0])
+
         return np.array(output_layer, dtype=object)
+        # , np.array(hidden_layer, dtype=object), np.array(all_layers, dtype=object)
 
     def forward2(self, x):
 
+        # data structures for activations and Z's
+        # activations = sigmoid(sum of weight * prev_act + bias)
+        # Z = sum of weight * prev_act + bias
+        # helps with the derivative of activations depending on Z's (sigmoid_derivated)
         image_layer_activations = [x]
         image_layer_zs = []
 
         inputs = x
-        num_of_layers = len(self.sizes) - 1
+        num_of_layers = self.num_layers - 1
 
         # for each layer of the NN
         for i in range(num_of_layers):
@@ -84,15 +81,27 @@ class MLP():
             # weights shape is for each neuron,
             # we have a weight for each neuron in the prev layer
             for b, w in zip(self.biases[i], self.weights[i]):
+
                 z = np.dot(w, inputs)+b
-                single_layer_activations.append(self.sigmoid(z))
+
+                if(i == num_of_layers - 1):
+                    a = z
+                else:
+                    a = self.sigmoid(z)
+
+                single_layer_activations.append(a)
                 single_layer_zs.append(z)
 
             # append each layer of activ and Z's in the all activ and Z's data structure
-            image_layer_activations.append(
-                np.array(single_layer_activations, dtype=float))
+            if(i == num_of_layers - 1):
+                image_layer_activations.append(
+                    np.array(self.softmax(single_layer_activations), dtype=float))
+            else:
+                image_layer_activations.append(
+                    np.array(single_layer_activations, dtype=float))
 
             image_layer_zs.append(np.array(single_layer_zs, dtype=float))
+
             # inputs becomes the activations of the last layer,
             # so i have the right number of neurons for the next iteration
             inputs = single_layer_activations
@@ -163,10 +172,3 @@ def softmax_derivated(x):
 def sigmoid_derivated(n):
     return MLP.sigmoid(n)*(1-MLP.sigmoid(n))
 # returns z for softmax utilisation if this function is called on the last layer
-
-
-def activation_call(last_layer, current_layer, z):
-    if last_layer == current_layer:
-        return z
-    else:
-        return MLP.sigmoid(z)

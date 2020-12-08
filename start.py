@@ -11,10 +11,13 @@ test_data, test_targets, train_data, train_targets = get_mnist_data()
 
 mlp_sgd = MLP_SGD(lr=0.25, sizes=[784, 30, 10],
                   activation_list=['sigmoid', 'softmax'])
+
 outputs1 = mlp_sgd.forward(test_data)
 print("Before update: ", mlp_sgd.loss(outputs1, test_targets))
 print("Accuracy: ", mlp_sgd.evaluate(test_data, test_targets))
-mlp_sgd.fit(train_data, train_targets, 2, 10)
+
+mlp_sgd.fit(train_data, train_targets, 5, 10)
+
 outputs2 = mlp_sgd.forward(test_data)
 print("Loss after update: ", mlp_sgd.loss(outputs2, test_targets))
 print("Accuracy: ", mlp_sgd.evaluate(test_data, test_targets))
