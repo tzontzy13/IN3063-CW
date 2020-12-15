@@ -35,12 +35,13 @@ class MLP():
                     if(i == num_of_layers - 1):
                         a = z
                     else:
-                        a = self.sigmoid(z)
+                        a = self.relu(z)
 
                     single_layer_activations.append(a)
 
                 if(i == num_of_layers - 1):
-                    image_layer_activations.append(self.softmax(single_layer_activations))
+                    image_layer_activations.append(
+                        self.softmax(single_layer_activations))
                 else:
                     image_layer_activations.append(single_layer_activations)
 
@@ -87,7 +88,7 @@ class MLP():
                 if(i == num_of_layers - 1):
                     a = z
                 else:
-                    a = self.sigmoid(z)
+                    a = self.relu(z)
 
                 single_layer_activations.append(a)
                 single_layer_zs.append(z)
@@ -148,14 +149,11 @@ class MLP():
 
     @staticmethod
     def relu(x):
-        return max(0, x)
+        return x * (x > 0)
 
     @staticmethod
     def relu_derivated(x):
-        if x > 0:
-            return 1
-        else:
-            return 0
+        return 1. * (x > 0)
 
     @ staticmethod
     def softmax(x):

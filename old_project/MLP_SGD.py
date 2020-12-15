@@ -27,7 +27,7 @@ class MLP_SGD(MLP):
         prior_loss = self.loss(criterion_outputs, y_train)
 
         for i in range(epochs):
-            print("Current epoch: ", i)
+            print("Current epoch: ", i + 1)
             # for each minibatch, call update
             for mini_X, mini_y in zip(X_mini_batches, y_mini_batches):
                 # the update function returns the mean of the gradients
@@ -44,15 +44,13 @@ class MLP_SGD(MLP):
             criterion_outputs = self.forward(X_train)
             current_loss = self.loss(criterion_outputs, y_train)
 
-            if(np.abs(prior_loss - current_loss) < 0.1):
+            if(np.abs(prior_loss - current_loss) < 0.00000001):
                 print("The NN update reached saturation")
-                return
             else:
                 # updates the prior loss for the next epoch
                 prior_loss = current_loss
 
         print("The NN update completed all updates")
-
 
     # calculate the gradient of all images in a minibatch
     # CHANGE NAME OF THIS FUNCTION
@@ -104,7 +102,7 @@ class MLP_SGD(MLP):
 
                 # if(self.activation_list[i] == 'sigmoid'):
                 sigma_z = np.dot(self.weights[i].transpose(
-                ), sigma_z) * sigmoid_derivated(zs[i-1])
+                ), sigma_z) * self.relu_derivated(zs[i-1])
                 # elif(self.activation_list[i] == 'relu'):
                 #     sigma_z = np.dot(self.weights[i].transpose(
                 #     ), sigma_z) * self.relu_derivated(zs[i-1])
