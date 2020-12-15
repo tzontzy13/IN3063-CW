@@ -58,10 +58,11 @@ for epoch in range(epochs):
     # BUT, it still works, the cost we calculated gets lower with each minibatch so we can compare it with the last minibatch
     # if it doesnt change much, we stop training and print accuracy and loss
     if(np.abs(loss_list_on_batches[-1] - loss_list_on_batches[-1 - minibatch_length]) < 0.005):
-        print("NN has saturated")
+        
         print("Accuracy:      ", acc_sum , "/", len(y_val))
         print("Loss:          ", loss_list_on_batches[-1])
         print('\n')
+        print("--- NN has saturated ---")
         break
 
     # if we havent reached saturation, we print this at the end of the last epoch

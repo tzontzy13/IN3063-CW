@@ -22,7 +22,7 @@ class Dense():
         # END OF ERROR
         # fixed error with scale = 0.1, because now the numbers are smaller and there is no overflow in RELU + RELU layers, 
         # at the softmax function in the gradient of the loss
-        self.weights = np.random.normal(scale=1,
+        self.weights = np.random.normal(scale=0.1,
                                         size=(neurons_in_input, neurons_in_output))
         self.biases = np.random.normal(size=(neurons_in_output))
 
