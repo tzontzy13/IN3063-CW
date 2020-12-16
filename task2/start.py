@@ -2,6 +2,9 @@ from get_data import load_dataset
 from Network import Network
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import plot_confusion_matrix
+import seaborn as sns
 
 # you change the configuration for the network in the init of Network class
 print('\n')
@@ -18,7 +21,7 @@ print('\n')
 
 # parameters for the network
 epochs = 30
-minibatch_length = 32
+minibatch_length = 50
 
 print("Number of epochs: ", epochs)
 print("Minibatch length: ", minibatch_length)
@@ -28,9 +31,13 @@ print("Epochs have started!")
 print('\n')
 
 # initial values for loss for each batch and accuracy
-# loss_list_on_batches = []
+initial_accuracy = network.accuracy(X_val, y_val) / len(X_val) * 100
 acc_list_on_epochs = []
-loss_list_on_epochs = [999]
+inital_loss = network.loss(X_val, y_val)
+loss_list_on_epochs = [inital_loss]
+print("Inital accuracy: {:.8f}".format(initial_accuracy))
+print("Inital loss:     {:.8f}".format(inital_loss))
+print('\n')
 
 # start program here
 # for each epoch
@@ -60,7 +67,7 @@ for epoch in range(epochs):
     # we did not use the Categorical Cross-Entropy loss funtion to compute the gradient
     # BUT, it still works, the cost we calculated gets lower with each minibatch so we can compare it with the last minibatch
     # if it doesnt change much, we stop training and print accuracy and loss
-    if(np.abs(loss_list_on_epochs[-1] - loss_list_on_epochs[-2]) < 0.001):
+    if(np.abs(loss_list_on_epochs[-1] - loss_list_on_epochs[-2]) < 0.0006):
 
         # print("Accuracy:      ", acc_list_on_epochs[-1], "/", len(y_val))
         print("Accuracy:       {:.2f} / 100 on {} examples".format(acc_list_on_epochs[-1], len(y_val)))
@@ -81,28 +88,37 @@ print("Testing")
 test_acc = network.accuracy(X_test, y_test)
 print("Test accuracy: ", test_acc, "/", len(y_test))
 
-# # plots
-# # plt.plot(history.history['loss'])
-# # plt.plot(history.history['val_loss'])
-# # plt.title('model loss')
-# # plt.ylabel('loss')
-# # plt.xlabel('epoch')
-# # plt.legend(['train', 'test'], loc='upper left')
-# # plt.show()
-# plt.plot(acc_list_on_epochs)
-# # plt.plot(loss_list_on_epochs)
-# # plt.plot()
-# plt.title("model accuracy")
-# plt.ylabel('accuracy')
-# plt.xlabel('epoch')
-# plt.legend(['loss', 'accuracy'], loc='upper left')
-# plt.show()
+# plots
+# https://likegeeks.com/seaborn-heatmap-tutorial/
 
-# # plt.plot(acc_list_on_epochs)
-# plt.plot(loss_list_on_batches)
-# # plt.plot()
-# plt.title("model accuracy")
-# plt.ylabel('loss')
-# plt.xlabel('batch')
-# plt.legend(['loss', 'accuracy'], loc='upper left')
-# plt.show()
+plt.plot(loss_list_on_epochs)
+plt.title("loss")
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['loss'], loc='best')
+plt.show()
+
+plt.plot(acc_list_on_epochs)
+plt.title("accuracy")
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['accuracy'], loc='best')
+plt.show()
+
+# confusion matrix
+
+y_pred = network.forward(X_test)
+y_pred = y_pred[-1]
+y_pred = np.argmax(y_pred, axis=1)
+
+cm = confusion_matrix(y_test, y_pred)
+
+ax= plt.subplot()
+ax.set_title('Predicted vs Actual')
+ax.xaxis.set_ticklabels(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
+ax.yaxis.set_ticklabels(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
+sns.heatmap(cm, annot=True, ax = ax, cmap='Reds', fmt='g')
+plt.xlabel('Predicted labels', axes=ax)
+plt.ylabel('True labels', axes=ax)
+plt.show()
+

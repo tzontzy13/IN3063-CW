@@ -8,8 +8,8 @@ from torch import nn, optim
 
 # Source: https://towardsdatascience.com/handwritten-digit-mnist-pytorch-977b5338e627
 
-transform = transforms.Compose([transforms.ToTensor(),
-                                transforms.Normalize((0.5,), (0.5,)),
+transform = transforms.Compose([transforms.ToTensor()
+                                # transforms.Normalize((0.5,), (0.5,)),
                                 ])
 
 trainset = datasets.MNIST('./task3data', download=True,
@@ -36,7 +36,7 @@ model = nn.Sequential(nn.Linear(input_size, hidden_sizes[0]),
                       nn.Linear(hidden_sizes[0], hidden_sizes[1]),
                       nn.ReLU(),
                       nn.Linear(hidden_sizes[1], output_size),
-                      nn.LogSoftmax(dim=1))
+                      nn.CrossEntropyLoss()) #dim=1
 # print(model)
 
 # criterion = nn.NLLLoss()
