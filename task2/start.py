@@ -1,7 +1,6 @@
 from get_data import load_dataset
-import numpy as np
-
 from Network import Network
+import numpy as np
 
 # you change the configuration for the network in the init of Network class
 print('\n')
@@ -38,12 +37,14 @@ for epoch in range(epochs):
     print("Current epoch: ", epoch + 1)
 
     # split data in minibatches
-    X_batches, y_batches = network.split_data_in_batches(X_train, y_train, minibatch_length = minibatch_length)
+    X_batches, y_batches = network.split_data_in_batches(
+        X_train, y_train, minibatch_length=minibatch_length)
 
     # for each minibatch
     for X_batch, y_batch in zip(X_batches, y_batches):
         # calculate batch loss
-        batch_loss, grad_for_stopping_criterion = network.train(X_batch, y_batch)
+        batch_loss, grad_for_stopping_criterion = network.train(
+            X_batch, y_batch)
         # append minibatch loss to list of all losses
         loss_list_on_batches.append(batch_loss)
 
@@ -58,15 +59,15 @@ for epoch in range(epochs):
     # BUT, it still works, the cost we calculated gets lower with each minibatch so we can compare it with the last minibatch
     # if it doesnt change much, we stop training and print accuracy and loss
     if(np.abs(loss_list_on_batches[-1] - loss_list_on_batches[-1 - minibatch_length]) < 0.005):
-        
-        print("Accuracy:      ", acc_sum , "/", len(y_val))
+
+        print("Accuracy:      ", acc_sum, "/", len(y_val))
         print("Loss:          ", loss_list_on_batches[-1])
         print('\n')
         print("--- NN has saturated ---")
         break
 
     # if we havent reached saturation, we print this at the end of the last epoch
-    print("Accuracy:      ", acc_sum , "/", len(y_val))
+    print("Accuracy:      ", acc_sum, "/", len(y_val))
     print("Loss:          ", loss_list_on_batches[-1])
     print('\n')
 #     plt.plot(train_log,label='train accuracy')

@@ -22,7 +22,7 @@ class CrossEntropy():
         # we are using a custom_softmax, that is referenced below
         self.softmax = Softmax()
         pass
-   
+
     # Reference 2 - formula from images and text
     # scroll down to Categorical Cross-Entropy loss
     # we built this function with the help of the first 2 images and the text associated with them
@@ -43,7 +43,7 @@ class CrossEntropy():
         # get zs and predicitons as input
         # computes the exponential of my predictions
         # and the sum of the exponential of the zs
-        # just like in the second picture (NOT the first) from the 
+        # just like in the second picture (NOT the first) from the
         # referenced wesite, under Categorical Cross-Entropy loss
         def custom_softmax(zs, predictions):
             e = np.exp(predictions)
@@ -55,7 +55,7 @@ class CrossEntropy():
         custom_softmax_value = custom_softmax(zs, predictions)
 
         # the Categorical Cross-Entropy loss is calculated using -log of the softmax
-        # just like in the second picture (NOT the first) from the 
+        # just like in the second picture (NOT the first) from the
         # referenced wesite, under Categorical Cross-Entropy loss
         cost = -np.log(custom_softmax_value)
 
