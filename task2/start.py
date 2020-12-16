@@ -1,6 +1,7 @@
 from get_data import load_dataset
 from Network import Network
 import numpy as np
+import matplotlib.pyplot as plt
 
 # you change the configuration for the network in the init of Network class
 print('\n')
@@ -16,7 +17,7 @@ print("Number of images to test on: ", len(X_test))
 print('\n')
 
 # parameters for the network
-epochs = 5000
+epochs = 30
 minibatch_length = 32
 
 print("Number of epochs: ", epochs)
@@ -27,8 +28,9 @@ print("Epochs have started!")
 print('\n')
 
 # initial values for loss for each batch and accuracy
-loss_list_on_batches = []
-acc = 0
+# loss_list_on_batches = []
+acc_list_on_epochs = []
+loss_list_on_epochs = [999]
 
 # start program here
 # for each epoch
@@ -42,14 +44,14 @@ for epoch in range(epochs):
 
     # for each minibatch
     for X_batch, y_batch in zip(X_batches, y_batches):
-        # calculate batch loss
-        batch_loss, grad_for_stopping_criterion = network.train(
-            X_batch, y_batch)
-        # append minibatch loss to list of all losses
-        loss_list_on_batches.append(batch_loss)
+        network.train(X_batch, y_batch)
 
-    # calculate accuracy
+    # calculate accuracy and loss after each epoch
     acc_sum = network.accuracy(X_val, y_val)
+    acc_list_on_epochs.append(acc_sum / len(X_val) * 100)
+
+    epoch_loss = network.loss(X_val, y_val)
+    loss_list_on_epochs.append(epoch_loss)
 
     # STOPPING CRITERION
     # we decided to have the loss as our stopping criterion
@@ -58,26 +60,49 @@ for epoch in range(epochs):
     # we did not use the Categorical Cross-Entropy loss funtion to compute the gradient
     # BUT, it still works, the cost we calculated gets lower with each minibatch so we can compare it with the last minibatch
     # if it doesnt change much, we stop training and print accuracy and loss
-    if(np.abs(loss_list_on_batches[-1] - loss_list_on_batches[-1 - minibatch_length]) < 0.005):
+    if(np.abs(loss_list_on_epochs[-1] - loss_list_on_epochs[-2]) < 0.001):
 
-        print("Accuracy:      ", acc_sum, "/", len(y_val))
-        print("Loss:          ", loss_list_on_batches[-1])
+        # print("Accuracy:      ", acc_list_on_epochs[-1], "/", len(y_val))
+        print("Accuracy:       {:.2f} / 100 on {} examples".format(acc_list_on_epochs[-1], len(y_val)))
+        print("Loss:           {:.8f}".format(loss_list_on_epochs[-1]))
         print('\n')
         print("--- NN has saturated ---")
         break
 
     # if we havent reached saturation, we print this at the end of the last epoch
-    print("Accuracy:      ", acc_sum, "/", len(y_val))
-    print("Loss:          ", loss_list_on_batches[-1])
+    # print("Accuracy:      ", acc_list_on_epochs[-1], "/", len(y_val))
+    print("Accuracy:       {:.2f} / 100 on {} examples".format(acc_list_on_epochs[-1], len(y_val)))
+    print("Loss:           {:.8f}".format(loss_list_on_epochs[-1]))
     print('\n')
-#     plt.plot(train_log,label='train accuracy')
-#     plt.plot(val_log,label='val accuracy')
-#     plt.legend(loc='best')
-#     plt.grid()
-#     plt.show()
 
 # here we test on X_TEST and Y_TEST
 # we return the accuracy on the TEST DATA
 print("Testing")
 test_acc = network.accuracy(X_test, y_test)
 print("Test accuracy: ", test_acc, "/", len(y_test))
+
+# # plots
+# # plt.plot(history.history['loss'])
+# # plt.plot(history.history['val_loss'])
+# # plt.title('model loss')
+# # plt.ylabel('loss')
+# # plt.xlabel('epoch')
+# # plt.legend(['train', 'test'], loc='upper left')
+# # plt.show()
+# plt.plot(acc_list_on_epochs)
+# # plt.plot(loss_list_on_epochs)
+# # plt.plot()
+# plt.title("model accuracy")
+# plt.ylabel('accuracy')
+# plt.xlabel('epoch')
+# plt.legend(['loss', 'accuracy'], loc='upper left')
+# plt.show()
+
+# # plt.plot(acc_list_on_epochs)
+# plt.plot(loss_list_on_batches)
+# # plt.plot()
+# plt.title("model accuracy")
+# plt.ylabel('loss')
+# plt.xlabel('batch')
+# plt.legend(['loss', 'accuracy'], loc='upper left')
+# plt.show()

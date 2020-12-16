@@ -80,8 +80,6 @@ class Network():
         # function from CrossEntropy class
         gradient_l = self.cross_entropy.grad_softmax_crossentropy_with_logits(
             final_zs, targets)
-        # median of all gradients for each image
-        grad = (np.sum(gradient_l) / len(gradient_l))
 
         # This is where the backward pass starts.
         # prepare inputs for backpropagation
@@ -96,14 +94,17 @@ class Network():
             # "go backwards" for each layer, calculating a new gradient dor that layer
             gradient_l = layer.backward(input, gradient_l)
 
-        # get all losses - for each output neuron
+    def loss(self, images, targets):
+        activations = self.forward(images)
+        final_zs = activations[-1]
+
         all_losses = self.cross_entropy.softmax_cross_entropy_loss(
             final_zs, targets)
         # median of all losses for each image
         loss = np.sum(all_losses / len(all_losses))
 
-        return loss, grad
-
+        return loss
+        
     # function for splitting dataset in minibatches
     def split_data_in_batches(self, images, targets, minibatch_length):
 
