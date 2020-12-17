@@ -11,13 +11,13 @@ import time
 from get_data import load_dataset
 
 # Hyper params
-n_epochs = 10
-batch_size_train = 64
-batch_size_test = 1000
-learning_rate = 0.05
+epochs = 10
+train_batch_size = 64
+test_batch_size = 1000
+l_r = 0.07
 momentum = 0.5
 # Retrieve the data
-train_loader, test_loader = load_dataset(batch_size_train, batch_size_test)
+train_data, test_data = load_dataset(train_batch_size, test_batch_size)
 
 
 # References for the main idea of building the __init__/forward functions:
@@ -35,36 +35,35 @@ class CNN(nn.Module):
         self.conv1 = nn.Conv2d(1, 10, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(10, 20, 5)
-        # self.conv2_drop = nn.Dropout2d()
-        self.fc1 = nn.Linear(320, 50)
-        self.fc2 = nn.Linear(50, 10)
-        self.soft = nn.Softmax()
+        self.conv2_drop = nn.Dropout2d()
+        self.layer1 = nn.Linear(320, 50)
+        self.layer2 = nn.Linear(50, 10)
 
     def forward(self, x):
         # Call the activation functions of each layer in order
         x = self.pool(F.relu(self.conv1(x)))
-        # x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
-        x = self.pool(F.relu(self.conv2(x)))
+        x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
+        # x = self.pool(F.relu(self.conv2(x)))
         # Resizes/ Flattens the input data
         # to be usable in the first activation function
         x = x.view(-1, 320)
-        x = F.relu(self.fc1(x))
+        x = F.relu(self.layer1(x))
         # x = F.dropout(x, training=self.training)
-        x = self.fc2(x)
+        x = self.layer2(x)
         return F.log_softmax(x)
 
 
 # Initialize the network and apply the SGD optimizeer
 network = CNN()
 optimizer = optim.SGD(network.parameters(),
-                      lr=learning_rate, momentum=momentum)
+                      lr=l_r, momentum=momentum)
 
 
 def train():
     # Selects the network mode to 'train'
     network.train()
     # Iterate through each mini_batch
-    for data, target in train_loader:
+    for data, target in train_data:
         # get the output from the forward pass
         output = network(data)
         # backward pass
@@ -93,7 +92,7 @@ def test(epoch):
     test_loss = 0
     correct_predict = 0
     # iterate through each mini-batch
-    for data, target in test_loader:
+    for data, target in test_data:
         # forward pass
         output = network(data)
         # sum the losses for each mini-batch
@@ -106,21 +105,21 @@ def test(epoch):
             if pred == actual:
                 correct_predict += 1
     # get mean loss by diving the sum by the number of batches
-    test_loss /= len(test_loader.dataset)
+    test_loss /= len(test_data.dataset)
     # Update params with the current loss and accuracy
     loss_list_on_epochs.append(test_loss)
-    acc_list_on_epochs.append(correct_predict / len(test_loader.dataset))
+    acc_list_on_epochs.append(correct_predict / len(test_data.dataset))
     # Print out the statistics for each epoch
     print('Epoch {} finished'.format(epoch))
     print('\nTest set: Avg. loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct_predict, len(test_loader.dataset),
-        100. * correct_predict / len(test_loader.dataset)))
+        test_loss, correct_predict, len(test_data.dataset),
+        100. * correct_predict / len(test_data.dataset)))
 
 
 # start the time lapse and then update the total_training_time list for each epoch
 start = time.time()
 # Start iterating through the epochs and call the train and test function for each.
-for epoch in range(n_epochs):
+for epoch in range(epochs):
     train()
     test(epoch + 1)
     end = time.time()
@@ -155,7 +154,7 @@ def get_all_preds(model, loader):
 
 # Retrieves the outputs of the network together with their respective labels
 # for use in the confusion matrix below
-y_pred, y_test = get_all_preds(network, test_loader)
+y_pred, y_test = get_all_preds(network, test_data)
 y_pred = np.argmax(y_pred, axis=1)
 
 # PLOTS

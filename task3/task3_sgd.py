@@ -12,7 +12,7 @@ from get_data import load_dataset
 
 # Hyper params
 n_epochs = 10
-batch_size_train = 64
+batch_size_train = 35
 batch_size_test = 1000
 learning_rate = 0.05
 # Retrieve the data
@@ -33,7 +33,6 @@ class SGD(nn.Module):
         self.fc1 = nn.Linear(784, 200)
         self.fc2 = nn.Linear(200, 100)
         self.fc3 = nn.Linear(100, 10)
-        self.soft = nn.Softmax()
 
     def forward(self, x):
         # Call the activation functions of each layer in order
@@ -102,9 +101,8 @@ def test(epoch):
     acc_list_on_epochs.append(100. * correct / len(test_loader.dataset))
     # Print out the statistics for each epoch
     print('Epoch {} finished'.format(epoch))
-    print('\nTest set: Avg. loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct, len(test_loader.dataset),
-        100. * correct / len(test_loader.dataset)))
+    print('\nTest set: Avg. loss: {:.4f}, Accuracy: {}/{} \n'.format(
+        test_loss, correct, len(test_loader.dataset)))
 
 
 start = time.time()
@@ -116,7 +114,7 @@ for epoch in range(n_epochs):
     end = time.time()
     total_training_time.append(end - start)
     # Stopping criterion with respect to the loss
-    if abs(loss_list_on_epochs[-1] - loss_list_on_epochs[-2]) < 0.005:
+    if abs(loss_list_on_epochs[-1] - loss_list_on_epochs[-2]) < 0.003:
         print("Network Saturated")
         loss_list_on_epochs = loss_list_on_epochs[1:]
         break
