@@ -1,7 +1,6 @@
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import torch.backends.cudnn
 import torchvision
 import torch
 from sklearn.metrics import confusion_matrix
@@ -11,63 +10,69 @@ import seaborn as sns
 import time
 from get_data import load_dataset
 
-# Hyper params sett
+# Hyper params
 n_epochs = 10
 batch_size_train = 64
 batch_size_test = 1000
-learning_rate = 0.01
+learning_rate = 0.05
 momentum = 0.5
-
-# Disables CUDA processing as it's not compatible with our machines
-torch.backends.cudnn.enabled = False
-
 # Retrieve the data
 train_loader, test_loader = load_dataset(batch_size_train, batch_size_test)
 
 
-class Net(nn.Module):
+# References for the main idea of building the __init__/forward functions:
+# Training a Classifier — PyTorch Tutorials 1.7.1 documentation. 2020.
+# [ONLINE] Available at: https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html.
+# [Accessed 17 December 2020].
+# MNIST Handwritten Digit Recognition in PyTorch - Nextjournal. 2020.
+# [ONLINE] Available at: https://nextjournal.com/gkoehler/pytorch-mnist
+# [Accessed 17 December 2020].
+class CNN(nn.Module):
     def __init__(self):
-        super(Net, self).__init__()
+        super(CNN, self).__init__()
         # Set up the structure of layers for the network
-        self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
-        self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
-        self.conv2_drop = nn.Dropout2d()
+        # Takes 1-channel images
+        self.conv1 = nn.Conv2d(1, 10, 5)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(10, 20, 5)
+        # self.conv2_drop = nn.Dropout2d()
         self.fc1 = nn.Linear(320, 50)
         self.fc2 = nn.Linear(50, 10)
         self.soft = nn.Softmax()
 
     def forward(self, x):
         # Call the activation functions of each layer in order
-        x = F.relu(F.max_pool2d(self.conv1(x), 2))
-        x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
-        # x = F.relu(F.max_pool2d(self.conv2(x), 2))
+        x = self.pool(F.relu(self.conv1(x)))
+        # x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
+        x = self.pool(F.relu(self.conv2(x)))
+        # Resizes/ Flattens the input data
+        # to be usable in the first activation function
         x = x.view(-1, 320)
         x = F.relu(self.fc1(x))
-        x = F.dropout(x, training=self.training)
+        # x = F.dropout(x, training=self.training)
         x = self.fc2(x)
         return F.log_softmax(x)
 
 
 # Initialize the network and apply the SGD optimizeer
-network = Net()
+network = CNN()
 optimizer = optim.SGD(network.parameters(),
                       lr=learning_rate, momentum=momentum)
 
 
-def train(epoch):
+def train():
+    # Selects the network mode to 'train'
     network.train()
     # Iterate through each mini_batch
-    for batch_idx, (data, target) in enumerate(train_loader):
+    for data, target in train_loader:
         # get the output from the forward pass
         output = network(data)
         # backward pass
-        loss = F.nll_loss(output, target)
         optimizer.zero_grad()
+        loss = F.nll_loss(output, target)
         loss.backward()
         # update params
         optimizer.step()
-
-    print('Epoch {}'.format(epoch))
 
 
 # Lists for usage in the plots section
@@ -76,40 +81,48 @@ acc_list_on_epochs = []
 total_training_time = []
 
 
-def test():
+# Reference for accuracy:
+# torch.max — PyTorch 1.7.0 documentation. 2020.
+# [ONLINE] Available at: https://pytorch.org/docs/stable/generated/torch.max.html.
+# [Accessed 17 December 2020].
+# Loss function/print methods have been adapted/taken
+# from the first references above the network class
+def test(epoch):
+    # Selects the network mode to 'eval'
     network.eval()
     test_loss = 0
-    correct = 0
-    # By using no_grad(), we skip the computation of the gradients  in
-    # the backward pass part as we only need to use forward for the testing stage
-    with torch.no_grad():
-        # iterate through each mini-batch
-        for data, target in test_loader:
-            # forward pass
-            output = network(data)
-            # sum the losses for each mini-batch
-            test_loss += F.nll_loss(output, target,
-                                    size_average=False).item()
-            # generate accuracy
-            pred = output.data.max(1, keepdim=True)[1]
-            correct += pred.eq(target.data.view_as(pred)).sum()
+    correct_predict = 0
+    # iterate through each mini-batch
+    for data, target in test_loader:
+        # forward pass
+        output = network(data)
+        # sum the losses for each mini-batch
+        # Loss format is taken/adapted from the first references above the class section
+        test_loss += F.nll_loss(output, target, size_average=False).item()
+        # generate accuracy
+        # We only use the second returned parameter
+        _, pred = torch.max(output, 1)
+        for pred, actual in zip(pred, target):
+            if pred == actual:
+                correct_predict += 1
     # get mean loss by diving the sum by the number of batches
     test_loss /= len(test_loader.dataset)
     # Update params with the current loss and accuracy
     loss_list_on_epochs.append(test_loss)
-    acc_list_on_epochs.append(100. * correct / len(test_loader.dataset))
+    acc_list_on_epochs.append(correct_predict / len(test_loader.dataset))
     # Print out the statistics for each epoch
+    print('Epoch {} finished'.format(epoch))
     print('\nTest set: Avg. loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct, len(test_loader.dataset),
-        100. * correct / len(test_loader.dataset)))
+        test_loss, correct_predict, len(test_loader.dataset),
+        100. * correct_predict / len(test_loader.dataset)))
 
 
+# start the time lapse and then update the total_training_time list for each epoch
+start = time.time()
 # Start iterating through the epochs and call the train and test function for each.
-for epoch in range(1, n_epochs + 1):
-    # start the time lapse and then update the total_training_time list for each epoch
-    start = time.time()
-    train(epoch)
-    test()
+for epoch in range(n_epochs):
+    train()
+    test(epoch + 1)
     end = time.time()
     total_training_time.append(end - start)
     # Stopping criterion with respect to the loss
@@ -118,9 +131,11 @@ for epoch in range(1, n_epochs + 1):
         loss_list_on_epochs = loss_list_on_epochs[1:]
         break
 
-# Source: https://deeplizard.com/learn/video/0LhiS6yu2qQ
 
-
+# Reference: DeepLizard. 2020.
+# CNN Confusion Matrix with PyTorch - Neural Network Programming.
+# [ONLINE] Available at: https://deeplizard.com/learn/video/0LhiS6yu2qQ.
+# [Accessed 17 December 2020].
 @torch.no_grad()
 def get_all_preds(model, loader):
     all_preds = torch.tensor([])
@@ -144,10 +159,13 @@ y_pred, y_test = get_all_preds(network, test_loader)
 y_pred = np.argmax(y_pred, axis=1)
 
 # PLOTS
-# https://likegeeks.com/seaborn-heatmap-tutorial/
+# Reference: Like Geeks. 2020.
+# Seaborn heatmap tutorial (Python Data Visualization) - Like Geeks.
+# [ONLINE] Available at: https://likegeeks.com/seaborn-heatmap-tutorial/.
+# s[Accessed 17 December 2020].
 plt.plot(total_training_time)
 plt.title("elapsed time")
-plt.ylabel('elapsed time')
+plt.ylabel('seconds')
 plt.xlabel('epoch')
 plt.legend(['elapsed time'], loc='best')
 plt.show()

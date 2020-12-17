@@ -1,12 +1,16 @@
 import torchvision
 import torch
 
-# Referece: Aayush Agrawal. 2020
-# Building Neural Network from scratch | by Aayush Agrawal | Towards Data Science.
-# [ONLINE] Available at: https://towardsdatascience.com/building-neural-network-from-scratch-9c88535bf8e9
-# [Accessed 15 December 2020]
 
-# get data as in the refference above, under the "Full network" section
+# Reference 1 — PyTorch 1.7.0 documentation. 2020.
+# torchvision.datasets — PyTorch 1.7.0 documentation.
+# [ONLINE] Available at: https://pytorch.org/docs/stable/torchvision/datasets.html#mnist.
+# [Accessed 17 December 2020].
+
+# Reference 2 - aiworkbox.com. 2020.
+# PyTorch MNIST: Load MNIST Dataset from PyTorch Torchvision · PyTorch Tutorial .
+# [ONLINE] Available at: https://www.aiworkbox.com/lessons/load-mnist-dataset-from-pytorch-torchvision.
+# [Accessed 17 December 2020].
 
 
 def load_dataset(batch_size_train, batch_size_test):
