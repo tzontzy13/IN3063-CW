@@ -15,6 +15,7 @@ class Sigmoid():
     
     # derivative of sigmoid, used for calculating cost
     # derivative of the cost/error with respect to sigmoid is: cost * sigmoid derivated
+    # chain rule
     # formula can be found in the lectures
     def backward(self, zs, next_layer_sigma_z):
         sigmoid_derivated = self.sigmoid(zs) * (1 - self.sigmoid(zs))

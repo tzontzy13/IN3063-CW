@@ -22,7 +22,7 @@ class Relu():
     def backward(self, zs, next_layer_sigma_z):
         # Calculates derivative of next_layer_sigma_z (error) with respect to zs
         relu_derivated = zs > 0
-
+        # chain rule
         output = next_layer_sigma_z * relu_derivated
 
         return output

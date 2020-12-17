@@ -1,14 +1,12 @@
 from get_data import load_dataset
 from Network import Network
 import numpy as np
-import torch.backends.cudnn
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import plot_confusion_matrix
 import seaborn as sns
 import time
 
-torch.backends.cudnn.enabled = False
 # you change the configuration for the network in the init of Network class
 print('\n')
 network = Network()
@@ -74,7 +72,7 @@ for epoch in range(epochs):
     # BUT, it still works, the cost we calculated gets lower with each minibatch so we can compare it with the last minibatch
     # if it doesnt change much, we stop training and print accuracy and loss
     
-    if(np.abs(loss_list_on_epochs[-1] - loss_list_on_epochs[-2]) < 0.001):
+    if(np.abs(loss_list_on_epochs[-1] - loss_list_on_epochs[-2]) < 0.003):
 
         print("Accuracy:       {:.2f} / 100 on {} examples".format(acc_list_on_epochs[-1], len(y_val)))
         print("Loss:           {:.8f}".format(loss_list_on_epochs[-1]))

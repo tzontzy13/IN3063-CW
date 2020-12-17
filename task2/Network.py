@@ -10,7 +10,8 @@ import numpy as np
 # Building Neural Network from scratch | by Aayush Agrawal | Towards Data Science.
 # [ONLINE] Available at: https://towardsdatascience.com/building-neural-network-from-scratch-9c88535bf8e9
 # [Accessed 15 December 2020]
-
+# we did not copy code, just the idea of splitting our neural network in components
+# and building it with components, not all at once
 
 class Network():
 
@@ -171,5 +172,5 @@ class Network():
         for pred, actual in zip(y_pred, targets):
             if pred == actual:
                 acc_sum += 1
-                
+
         return acc_sum

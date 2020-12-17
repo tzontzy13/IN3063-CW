@@ -14,7 +14,6 @@ import numpy as np
 
 from Softmax import Softmax
 
-
 class CrossEntropy():
 
     def __init__(self):
@@ -24,14 +23,14 @@ class CrossEntropy():
         pass
 
     # Reference 2 - formula from images and text
-    # scroll down to Categorical Cross-Entropy loss
+    # scroll down to Categorical Cross-Entropy loss ( Negative Likelihood Loss )
     # we built this function with the help of the first 2 images and the text associated with them
     def softmax_cross_entropy_loss(self, zs, targets):
 
         # building the predictions list
         # a list of what was predicted
-        # i get my targets and zs
-        # my target is an int
+        # get targets and zs
+        # target is an int
         # zs are an array of shape (10,1)
         # zs[target] is what is predicted
         predictions = []
@@ -41,7 +40,7 @@ class CrossEntropy():
 
         # custom softmax
         # get zs and predicitons as input
-        # computes the exponential of my predictions
+        # computes the exponential of predictions
         # and the sum of the exponential of the zs
         # just like in the second picture (NOT the first) from the
         # referenced wesite, under Categorical Cross-Entropy loss
@@ -54,12 +53,12 @@ class CrossEntropy():
         # get softmax value from above function
         custom_softmax_value = custom_softmax(zs, predictions)
 
-        # the Categorical Cross-Entropy loss is calculated using -log of the softmax
+        # the Categorical Cross-Entropy (NLL) loss is calculated using -log of the softmax
         # just like in the second picture (NOT the first) from the
         # referenced wesite, under Categorical Cross-Entropy loss
         cost = -np.log(custom_softmax_value)
 
-        # retusn the Categorical Cross-Entropy loss value
+        # returns the Categorical Cross-Entropy loss value
         return cost
 
     # Reference 1 - code
