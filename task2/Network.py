@@ -19,11 +19,32 @@ class Network():
 
         # this is where you "build" your network structure
         # Adds the sizes and types of layers used in the network
-        self.network.append(Dense(784, 200))
+        
+        self.network.append(Dense(784, 200, 0.05))
         self.network.append(Relu())
-        self.network.append(Dense(200, 100))
+        self.network.append(Dense(200, 100, 0.05))
         self.network.append(Relu())
-        self.network.append(Dense(100, 10))
+        self.network.append(Dense(100, 10, 0.05))
+
+        # self.network.append(Dense(784, 256, 0.01))
+        # self.network.append(Relu())
+        # self.network.append(Dense(256, 128, 0.01))
+        # self.network.append(Relu())
+        # self.network.append(Dense(128, 64, 0.01))
+        # self.network.append(Relu())
+        # self.network.append(Dense(64, 10, 0.01))
+
+        # self.network.append(Dense(784, 200, 0.02))
+        # self.network.append(Sigmoid())
+        # self.network.append(Dense(200, 100, 0.02))
+        # self.network.append(Sigmoid())
+        # self.network.append(Dense(100, 10, 0.02))
+        
+        # self.network.append(Dense(784, 200, 0.03))
+        # self.network.append(Relu())
+        # self.network.append(Dense(200, 100, 0.03))
+        # self.network.append(Sigmoid())
+        # self.network.append(Dense(100, 10, 0.03))
 
         self.cross_entropy = CrossEntropy()
 
@@ -43,28 +64,6 @@ class Network():
             prev_layer_activations = all_activations[-1]
 
         return all_activations
-
-    # Calculates the accuracy of the network by summing up the right-guessed answers
-    # It makes use of the output of the last activation and the targets
-    def accuracy(self, images, targets):
-
-        outputs = self.forward(images)
-
-        # stores the network output
-        y_actual = outputs[-1]
-
-        y_pred = []
-
-        for n in y_actual:
-            number = np.argmax(n)
-            y_pred.append(number)
-
-        acc_sum = 0
-        for pred, actual in zip(y_pred, targets):
-            if pred == actual:
-                acc_sum += 1
-
-        return acc_sum
 
     # Trains the network by performing forward and backward pass on each mini-batch
     def train(self, images, targets):
@@ -93,17 +92,6 @@ class Network():
         for layer, input in zip(np.flip(self.network), flip_inputs):
             # "go backwards" for each layer, calculating a new gradient dor that layer
             gradient_l = layer.backward(input, gradient_l)
-
-    def loss(self, images, targets):
-        activations = self.forward(images)
-        final_zs = activations[-1]
-
-        all_losses = self.cross_entropy.softmax_cross_entropy_loss(
-            final_zs, targets)
-        # median of all losses for each image
-        loss = np.sum(all_losses / len(all_losses))
-
-        return loss
         
     # function for splitting dataset in minibatches
     def split_data_in_batches(self, images, targets, minibatch_length):
@@ -145,3 +133,43 @@ class Network():
             y_batches.append(test_y)
 
         return X_batches, y_batches
+
+    # function for computin loss
+    def loss(self, images, targets):
+        # get Z's of last dense layer
+        activations = self.forward(images)
+        final_zs = activations[-1]
+
+        # loss at each image
+        all_losses = self.cross_entropy.softmax_cross_entropy_loss(
+            final_zs, targets)
+        # median of all losses for each image
+        loss = np.sum(all_losses / len(all_losses))
+
+        return loss
+
+    # Calculates the accuracy of the network by summing up the right-guessed answers
+    # It makes use of the output of the last activation and the targets
+    def accuracy(self, images, targets):
+
+        outputs = self.forward(images)
+
+        # stores the network output
+        y_actual = outputs[-1]
+
+        y_pred = []
+
+        # n is a vector, we just retrieve the position of the largets element
+        # reverse one hot encoding
+        # vector -> number
+        for n in y_actual:
+            number = np.argmax(n)
+            y_pred.append(number)
+
+        # correctly predicted images
+        acc_sum = 0
+        for pred, actual in zip(y_pred, targets):
+            if pred == actual:
+                acc_sum += 1
+                
+        return acc_sum

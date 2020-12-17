@@ -24,7 +24,7 @@ print('\n')
 
 # parameters for the network
 epochs = 30
-minibatch_length = 50
+minibatch_length = 35
 
 print("Number of epochs: ", epochs)
 print("Minibatch length: ", minibatch_length)
@@ -42,11 +42,12 @@ print("Inital accuracy: {:.8f}".format(initial_accuracy))
 print("Inital loss:     {:.8f}".format(inital_loss))
 print('\n')
 
+start = time.time()
+
 # start program here
 # for each epoch
 total_training_time = []
 for epoch in range(epochs):
-    start = time.time()
 
     print("Current epoch: ", epoch + 1)
 
@@ -72,23 +73,26 @@ for epoch in range(epochs):
     # we did not use the Categorical Cross-Entropy loss funtion to compute the gradient
     # BUT, it still works, the cost we calculated gets lower with each minibatch so we can compare it with the last minibatch
     # if it doesnt change much, we stop training and print accuracy and loss
-    end = time.time()
-    total_training_time.append(end - start)
-    if(np.abs(loss_list_on_epochs[-1] - loss_list_on_epochs[-2]) < 0.006):
+    
+    if(np.abs(loss_list_on_epochs[-1] - loss_list_on_epochs[-2]) < 0.001):
 
-        # print("Accuracy:      ", acc_list_on_epochs[-1], "/", len(y_val))
-        print(
-            "Accuracy:       {:.2f} / 100 on {} examples".format(acc_list_on_epochs[-1], len(y_val)))
+        print("Accuracy:       {:.2f} / 100 on {} examples".format(acc_list_on_epochs[-1], len(y_val)))
         print("Loss:           {:.8f}".format(loss_list_on_epochs[-1]))
         print('\n')
         print("--- NN has saturated ---")
         break
     # if we havent reached saturation, we print this at the end of the last epoch
-    # print("Accuracy:      ", acc_list_on_epochs[-1], "/", len(y_val))
-    print(
-        "Accuracy:       {:.2f} / 100 on {} examples".format(acc_list_on_epochs[-1], len(y_val)))
+    print("Accuracy:       {:.2f} / 100 on {} examples".format(acc_list_on_epochs[-1], len(y_val)))
     print("Loss:           {:.8f}".format(loss_list_on_epochs[-1]))
     print('\n')
+
+    end = time.time()
+    total_training_time.append(end)
+
+end = time.time()
+print('\n')
+print("Time spent for all epochs: ", end-start)
+print('\n')
 
 # here we test on X_TEST and Y_TEST
 # we return the accuracy on the TEST DATA
@@ -97,10 +101,10 @@ test_acc = network.accuracy(X_test, y_test)
 print("Test accuracy: ", test_acc, "/", len(y_test))
 
 # plots
-# https://likegeeks.com/seaborn-heatmap-tutorial/
+
 plt.plot(total_training_time)
 plt.title("elapsed time")
-plt.ylabel('elapsed time')
+plt.ylabel('seconds')
 plt.xlabel('epoch')
 plt.legend(['elapsed time'], loc='best')
 plt.show()
@@ -126,6 +130,15 @@ y_pred = y_pred[-1]
 y_pred = np.argmax(y_pred, axis=1)
 
 cm = confusion_matrix(y_test, y_pred)
+
+# https://likegeeks.com/seaborn-heatmap-tutorial/
+# Like Geeks. 2020. 
+# Seaborn heatmap tutorial (Python Data Visualization) - Like Geeks. 
+# [ONLINE] Available at: https://likegeeks.com/seaborn-heatmap-tutorial/. 
+# [Accessed 17 December 2020].
+# used this for plotting the confusion matrix with SEABORN
+# we didnt use matplotlib because we didnt know how to place the numbers in the squares with matplotlib
+# line 147 - sns.heatmap( ANNOT means annotated squared)
 
 ax = plt.subplot()
 ax.set_title('Predicted vs Actual')

@@ -11,14 +11,15 @@ class Dense():
         self.l_r = l_r
 
         # docs.scipy. 2016.
-        #  numpy.random.normal. 
+        # numpy.random.normal. 
         # [ONLINE] Available at: https://docs.scipy.org/doc//numpy-1.10.4/reference/generated/numpy.random.normal.html. 
         # [Accessed 15 December 2020].
 
         # we used the above website to change the SCALE ATTRIBUTE from 1.0 to 0.1 for the np.random.normal function
         # -> we got the below error when scale = 1
+        # error in Cross Entropy class
         # RuntimeWarning: overflow encountered in exp
-        # softmax = np.exp(logits) / np.exp(logits).sum(axis=1, keepdims=True)
+        # e = np.exp(predictions)
         # END OF ERROR
         # fixed error with scale = 0.1, because now the numbers are smaller and there is no overflow in RELU + RELU layers, 
         # at the softmax function in the gradient of the loss
@@ -79,4 +80,5 @@ class Dense():
         self.weights -= self.l_r * gradient_w
         self.biases -= self.l_r * gradient_b
 
+        # return the gradient (error) in this layer
         return sigma_z
