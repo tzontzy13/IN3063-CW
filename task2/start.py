@@ -1,11 +1,14 @@
 from get_data import load_dataset
 from Network import Network
 import numpy as np
+import torch.backends.cudnn
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import plot_confusion_matrix
 import seaborn as sns
+import time
 
+torch.backends.cudnn.enabled = False
 # you change the configuration for the network in the init of Network class
 print('\n')
 network = Network()
@@ -41,7 +44,9 @@ print('\n')
 
 # start program here
 # for each epoch
+total_training_time = []
 for epoch in range(epochs):
+    start = time.time()
 
     print("Current epoch: ", epoch + 1)
 
@@ -67,18 +72,21 @@ for epoch in range(epochs):
     # we did not use the Categorical Cross-Entropy loss funtion to compute the gradient
     # BUT, it still works, the cost we calculated gets lower with each minibatch so we can compare it with the last minibatch
     # if it doesnt change much, we stop training and print accuracy and loss
-    if(np.abs(loss_list_on_epochs[-1] - loss_list_on_epochs[-2]) < 0.0006):
+    end = time.time()
+    total_training_time.append(end - start)
+    if(np.abs(loss_list_on_epochs[-1] - loss_list_on_epochs[-2]) < 0.006):
 
         # print("Accuracy:      ", acc_list_on_epochs[-1], "/", len(y_val))
-        print("Accuracy:       {:.2f} / 100 on {} examples".format(acc_list_on_epochs[-1], len(y_val)))
+        print(
+            "Accuracy:       {:.2f} / 100 on {} examples".format(acc_list_on_epochs[-1], len(y_val)))
         print("Loss:           {:.8f}".format(loss_list_on_epochs[-1]))
         print('\n')
         print("--- NN has saturated ---")
         break
-
     # if we havent reached saturation, we print this at the end of the last epoch
     # print("Accuracy:      ", acc_list_on_epochs[-1], "/", len(y_val))
-    print("Accuracy:       {:.2f} / 100 on {} examples".format(acc_list_on_epochs[-1], len(y_val)))
+    print(
+        "Accuracy:       {:.2f} / 100 on {} examples".format(acc_list_on_epochs[-1], len(y_val)))
     print("Loss:           {:.8f}".format(loss_list_on_epochs[-1]))
     print('\n')
 
@@ -90,8 +98,14 @@ print("Test accuracy: ", test_acc, "/", len(y_test))
 
 # plots
 # https://likegeeks.com/seaborn-heatmap-tutorial/
+plt.plot(total_training_time)
+plt.title("elapsed time")
+plt.ylabel('elapsed time')
+plt.xlabel('epoch')
+plt.legend(['elapsed time'], loc='best')
+plt.show()
 
-plt.plot(loss_list_on_epochs)
+plt.plot(loss_list_on_epochs[1:])
 plt.title("loss")
 plt.ylabel('loss')
 plt.xlabel('epoch')
@@ -113,12 +127,11 @@ y_pred = np.argmax(y_pred, axis=1)
 
 cm = confusion_matrix(y_test, y_pred)
 
-ax= plt.subplot()
+ax = plt.subplot()
 ax.set_title('Predicted vs Actual')
 ax.xaxis.set_ticklabels(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
 ax.yaxis.set_ticklabels(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
-sns.heatmap(cm, annot=True, ax = ax, cmap='Reds', fmt='g')
+sns.heatmap(cm, annot=True, ax=ax, cmap='Reds', fmt='g')
 plt.xlabel('Predicted labels', axes=ax)
 plt.ylabel('True labels', axes=ax)
 plt.show()
-

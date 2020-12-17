@@ -8,43 +8,32 @@ from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-
+import time
+from get_data import load_dataset
 # Hyper params
 n_epochs = 10
 batch_size_train = 64
 batch_size_test = 1000
 learning_rate = 0.05
 
-random_seed = 1
+# Disables CUDA processing as it's not compatible with our machines
 torch.backends.cudnn.enabled = False
-torch.manual_seed(random_seed)
 
-train_loader = torch.utils.data.DataLoader(
-    torchvision.datasets.MNIST('./task3data', train=True, download=True,
-                               transform=torchvision.transforms.Compose([
-                                   torchvision.transforms.ToTensor()
-                               ])),
-    batch_size=batch_size_train, shuffle=True)
-
-test_loader = torch.utils.data.DataLoader(
-    torchvision.datasets.MNIST('./task3data', train=False, download=True,
-                               transform=torchvision.transforms.Compose([
-                                   torchvision.transforms.ToTensor()
-                               ])),
-    batch_size=batch_size_test, shuffle=True)
+# Retrieve the data
+train_loader, test_loader = load_dataset(batch_size_train, batch_size_test)
 
 
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
+        # Set up the structure of layers for the network
         self.fc1 = nn.Linear(784, 200)
         self.fc2 = nn.Linear(200, 100)
         self.fc3 = nn.Linear(100, 10)
         self.soft = nn.Softmax()
 
-        # self.conv2_drop = nn.Dropout2d()
-
     def forward(self, x):
+        # Call the activation functions of each layer in order
         x = x.view(-1, 784)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
@@ -52,24 +41,22 @@ class Net(nn.Module):
         return F.log_softmax(x)
 
 
+# Initialize the network and apply the SGD optimizeer
 network = Net()
 optimizer = optim.SGD(network.parameters(),
                       lr=learning_rate)
 
-test_losses = []
-test_counter = [i*len(train_loader.dataset) for i in range(n_epochs + 1)]
-
 
 def train(epoch):
     network.train()
+    # Iterate through each mini_batch
     for batch_idx, (data, target) in enumerate(train_loader):
+        # get the output from the forward pass
         output = network(data)
-
         # backward pass
         loss = F.nll_loss(output, target)
         optimizer.zero_grad()
         loss.backward()
-
         # update params
         optimizer.step()
 
@@ -78,31 +65,46 @@ def train(epoch):
 
 loss_list_on_epochs = [0]
 acc_list_on_epochs = []
+total_training_time = []
 
 
 def test():
     network.eval()
     test_loss = 0
     correct = 0
+    # By using no_grad(), we skip the computation of the gradients  in
+    # the backward pass part as we only need to use forward for the testing stage
     with torch.no_grad():
+        # iterate through each mini-batch
         for data, target in test_loader:
+            # forward pass
             output = network(data)
+            # sum the losses for each mini-batch
             test_loss += F.nll_loss(output, target,
                                     size_average=False).item()
+            # generate accuracy
             pred = output.data.max(1, keepdim=True)[1]
             correct += pred.eq(target.data.view_as(pred)).sum()
+    # get mean loss by diving the sum by the number of batches
     test_loss /= len(test_loader.dataset)
+    # Update params with the current loss and accuracy
     loss_list_on_epochs.append(test_loss)
     acc_list_on_epochs.append(100. * correct / len(test_loader.dataset))
-    # test_losses.append(test_loss)
+    # Print out the statistics for each epoch
     print('\nTest set: Avg. loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
 
 
+# Start iterating through the epochs and call the train and test function for each.
 for epoch in range(1, n_epochs + 1):
+    # start the time lapse and then update the total_training_time list for each epoch
+    start = time.time()
     train(epoch)
     test()
+    end = time.time()
+    total_training_time.append(end - start)
+    # Stopping criterion with respect to the loss
     if abs(loss_list_on_epochs[-1] - loss_list_on_epochs[-2]) < 0.005:
         print("Network Saturated")
         loss_list_on_epochs = loss_list_on_epochs[1:]
@@ -128,10 +130,19 @@ def get_all_preds(model, loader):
     return all_preds, all_labels
 
 
+# Retrieves the outputs of the network together with their respective labels
+# for use in the confusion matrix below
 y_pred, y_test = get_all_preds(network, test_loader)
 y_pred = np.argmax(y_pred, axis=1)
 
 # PLOTS
+# https://likegeeks.com/seaborn-heatmap-tutorial/
+plt.plot(total_training_time)
+plt.title("elapsed time")
+plt.ylabel('elapsed time')
+plt.xlabel('epoch')
+plt.legend(['elapsed time'], loc='best')
+plt.show()
 
 plt.plot(loss_list_on_epochs)
 plt.title("loss")
