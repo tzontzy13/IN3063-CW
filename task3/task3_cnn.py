@@ -11,10 +11,10 @@ import time
 from get_data import load_dataset
 
 # Hyper params
-epochs = 10
-train_batch_size = 64
+epochs = 12
+train_batch_size = 30
 test_batch_size = 1000
-l_r = 0.07
+l_r = 0.0005
 momentum = 0.5
 # Retrieve the data
 train_data, test_data = load_dataset(train_batch_size, test_batch_size)
@@ -36,8 +36,8 @@ class CNN(nn.Module):
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(10, 20, 5)
         self.conv2_drop = nn.Dropout2d()
-        self.layer1 = nn.Linear(320, 50)
-        self.layer2 = nn.Linear(50, 10)
+        self.layer1 = nn.Linear(320, 60)
+        self.layer2 = nn.Linear(60, 10)
 
     def forward(self, x):
         # Call the activation functions of each layer in order
@@ -55,8 +55,8 @@ class CNN(nn.Module):
 
 # Initialize the network and apply the SGD optimizeer
 network = CNN()
-optimizer = optim.SGD(network.parameters(),
-                      lr=l_r, momentum=momentum)
+optimizer = optim.Adam(network.parameters(),
+                      lr=l_r) # , momentum=momentum
 
 
 def train():
@@ -114,6 +114,7 @@ def test(epoch):
     print('\nTest set: Avg. loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         test_loss, correct_predict, len(test_data.dataset),
         100. * correct_predict / len(test_data.dataset)))
+    
 
 
 # start the time lapse and then update the total_training_time list for each epoch
@@ -125,11 +126,10 @@ for epoch in range(epochs):
     end = time.time()
     total_training_time.append(end - start)
     # Stopping criterion with respect to the loss
-    if abs(loss_list_on_epochs[-1] - loss_list_on_epochs[-2]) < 0.005:
+    if abs(loss_list_on_epochs[-1] - loss_list_on_epochs[-2]) < 0.001:
         print("Network Saturated")
         loss_list_on_epochs = loss_list_on_epochs[1:]
         break
-
 
 # Reference: DeepLizard. 2020.
 # CNN Confusion Matrix with PyTorch - Neural Network Programming.
