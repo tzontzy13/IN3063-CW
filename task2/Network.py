@@ -27,14 +27,6 @@ class Network():
         self.network.append(Relu())
         self.network.append(Dense(100, 10, 0.05))
 
-        # self.network.append(Dense(784, 256, 0.01))
-        # self.network.append(Relu())
-        # self.network.append(Dense(256, 128, 0.01))
-        # self.network.append(Relu())
-        # self.network.append(Dense(128, 64, 0.01))
-        # self.network.append(Relu())
-        # self.network.append(Dense(64, 10, 0.01))
-
         # self.network.append(Dense(784, 200, 0.02))
         # self.network.append(Sigmoid())
         # self.network.append(Dense(200, 100, 0.02))

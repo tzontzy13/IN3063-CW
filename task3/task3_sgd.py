@@ -150,7 +150,7 @@ y_pred = np.argmax(y_pred, axis=1)
 # Reference: Like Geeks. 2020.
 # Seaborn heatmap tutorial (Python Data Visualization) - Like Geeks.
 # [ONLINE] Available at: https://likegeeks.com/seaborn-heatmap-tutorial/.
-# s[Accessed 17 December 2020].
+# [Accessed 17 December 2020].
 plt.plot(total_training_time)
 plt.title("elapsed time")
 plt.ylabel('elapsed time')
