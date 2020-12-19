@@ -13,6 +13,7 @@ HOW TO RUN TASK 2
 -run "python start.py" file
 
 HOW TO RUN TASK 3
+Disclaimer: Please ignore the UserWarnings when running the below python files
 -cd into / open task 3 folder
 -run "python task3_sgd.py" for the same architecture as task 2
 -run "python task3_cnn.py" for the convolutional architecture

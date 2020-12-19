@@ -14,12 +14,13 @@ import numpy as np
 
 from Softmax import Softmax
 
+
 class CrossEntropy():
 
     def __init__(self):
         # never used
         # we are using a custom_softmax, that is referenced below
-        self.softmax = Softmax()
+        # self.softmax = Softmax()
         pass
 
     # Reference 2 - formula from images and text

@@ -13,6 +13,7 @@ import numpy as np
 # we did not copy code, just the idea of splitting our neural network in components
 # and building it with components, not all at once
 
+
 class Network():
 
     def __init__(self):
@@ -20,7 +21,7 @@ class Network():
 
         # this is where you "build" your network structure
         # Adds the sizes and types of layers used in the network
-        
+
         self.network.append(Dense(784, 200, 0.05))
         self.network.append(Relu())
         self.network.append(Dense(200, 100, 0.05))
@@ -32,7 +33,7 @@ class Network():
         # self.network.append(Dense(200, 100, 0.02))
         # self.network.append(Sigmoid())
         # self.network.append(Dense(100, 10, 0.02))
-        
+
         # self.network.append(Dense(784, 200, 0.03))
         # self.network.append(Relu())
         # self.network.append(Dense(200, 100, 0.03))
@@ -85,7 +86,7 @@ class Network():
         for layer, input in zip(np.flip(self.network), flip_inputs):
             # "go backwards" for each layer, calculating a new gradient dor that layer
             gradient_l = layer.backward(input, gradient_l)
-        
+
     # function for splitting dataset in minibatches
     def split_data_in_batches(self, images, targets, minibatch_length):
 
@@ -127,7 +128,7 @@ class Network():
 
         return X_batches, y_batches
 
-    # function for computin loss
+    # function for computing the loss
     def loss(self, images, targets):
         # get Z's of last dense layer
         activations = self.forward(images)
@@ -141,7 +142,7 @@ class Network():
 
         return loss
 
-    # Calculates the accuracy of the network by summing up the right-guessed answers
+    # Calculates the accuracy of the network by summing up the correctly guessed answers
     # It makes use of the output of the last activation and the targets
     def accuracy(self, images, targets):
 
